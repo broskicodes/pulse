@@ -75,6 +75,7 @@ export class WorkerPool {
 export enum ClientMessageType {
     Tweets = "tweets",
     Engagements = "engagements",
+    Import = "import",
 }
 
 export enum WebSocketMessageType {
@@ -93,7 +94,12 @@ export interface EngagementsPayload {
     handle: string;
 }
 
-export type ClientMessagePayload = TweetsPayload | EngagementsPayload;
+export interface ImportPayload {
+    tweetIds: string[];
+    handle: string;
+}
+
+export type ClientMessagePayload = TweetsPayload | EngagementsPayload | ImportPayload;
 
 interface ClientMessage {
   id?: string;
@@ -172,6 +178,16 @@ async function handleMessage(socket: WebSocket, message: ClientMessage) {
         type: WebSocketMessageType.Success,
         clientMessageType: message.type,
         payload: engagements
+      }));
+      break;
+
+    case ClientMessageType.Import:
+      const importResult = await workerPool.runTask(message.type, message.payload);
+      socket.send(JSON.stringify({
+        messageId: message.id,
+        type: WebSocketMessageType.Success,
+        clientMessageType: message.type,
+        payload: importResult
       }));
       break;
     default:

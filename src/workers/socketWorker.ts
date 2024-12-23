@@ -1,6 +1,6 @@
 import { parentPort, workerData } from 'worker_threads';
 import { TwitterScraperService } from '../services/twitterScraperService';
-import { ClientMessagePayload, ClientMessageType, EngagementsPayload, TweetsPayload } from '../plugins/websocket';
+import { ClientMessagePayload, ClientMessageType, EngagementsPayload, ImportPayload, TweetsPayload } from '../plugins/websocket';
 import { chunkArray, getSinceDate } from '../lib/utils';
 
 parentPort?.on('message', async ({ type, payload }: { type: ClientMessageType, payload: ClientMessagePayload }) => {
@@ -43,6 +43,19 @@ parentPort?.on('message', async ({ type, payload }: { type: ClientMessageType, p
                     }))
             )).flat().filter(tweet => tweet !== null);
             parentPort?.postMessage(result);
+            break;
+        }
+        case ClientMessageType.Import: {
+            const { tweetIds, handle } = payload as ImportPayload;
+            const scraper = new TwitterScraperService();
+            const result = await scraper.runScrapeJob({
+                input: {
+                    tweetIDs: tweetIds,
+                    sort: "Top",
+                    tweetLanguage: "en",
+                }
+            });
+            parentPort?.postMessage(result?.filter(tweet => tweet.author.handle === handle));
             break;
         }
     }

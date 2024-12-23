@@ -13,6 +13,7 @@ export class TwitterScraperService {
     async runScrapeJob(input: {
         input?: {
             searchTerms?: string[],
+            tweetIDs?: string[],
             sort?: string,
             tweetLanguage?: string,
             maxItems?: number
@@ -23,6 +24,7 @@ export class TwitterScraperService {
     async runScrapeJob(
         scrapeTypeOrInput: TwitterScrapeType | { input?: {
           searchTerms?: string[],
+          tweetIDs?: string[],
           sort?: string,
           tweetLanguage?: string,
           maxItems?: number
